@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  SUBMITTED
+  REVISION
+  APPROVED
+}
+
+enum MilestoneStatus {
+  LOCKED
+  IN_PROGRESS
+  SUBMITTED
+  REVISION
+  COMPLETED
+}
+
+enum FeedbackType {
+  COMMENT
+  APPROVAL
+  REVISION_REQUEST
+}
+
+enum ShopCategory {
+  TITLE
+  FRAME
+  ICON
+  FLAIR
+}
+
+// ==================== MODELS ====================
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  password       String
+  role           Role      @default(STUDENT)
+  avatar         String?
+  xp             Int       @default(0)
+  level          Int       @default(1)
+  coins          Int       @default(0)
+  activeTitle    String?
+  activeFrame    String?
+  activeIcon     String?
+  activeFlair    String?
+  loginStreak    Int       @default(0)
+  lastLoginDate  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  groupMemberships GroupMember[]
+  teacherGroups    Group[]          @relation("TeacherGroups")
+  assignedTasks    Task[]           @relation("AssignedTasks")
+  feedbackGiven    Feedback[]
+  achievements     UserAchievement[]
+  notifications    Notification[]
+  purchases        UserPurchase[]
+  coinHistory      CoinTransaction[]
+
+  @@map("users")
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  section   String
+  subject   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacherId  String
+  teacher    User         @relation("TeacherGroups", fields: [teacherId], references: [id])
+  members    GroupMember[]
+  milestones Milestone[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  userId   String
+  groupId  String
+  joinedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("group_members")
+}
+
+model Milestone {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  order       Int
+  status      MilestoneStatus @default(LOCKED)
+  dueDate     DateTime?
+  xpReward    Int             @default(50)
+  coinReward  Int             @default(25)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@map("milestones")
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  xpReward    Int        @default(10)
+  coinReward  Int        @default(10)
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  milestoneId  String
+  milestone    Milestone  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  assignedToId String?
+  assignedTo   User?      @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  feedback     Feedback[]
+
+  @@map("tasks")
+}
+
+model Feedback {
+  id        String       @id @default(cuid())
+  content   String
+  type      FeedbackType @default(COMMENT)
+  createdAt DateTime     @default(now())
+
+  taskId    String
+  task      Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  teacherId String
+  teacher   User   @relation(fields: [teacherId], references: [id])
+
+  @@map("feedbacks")
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  title       String
+  description String
+  icon        String
+  xpRequired  Int    @default(0)
+  coinReward  Int    @default(15)
+  condition   String
+
+  users UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id         String   @id @default(cuid())
+  unlockedAt DateTime @default(now())
+
+  userId        String
+  achievementId String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model ShopItem {
+  id          String       @id @default(cuid())
+  name        String
+  description String
+  category    ShopCategory
+  price       Int
+  icon        String
+  rarity      String       @default("common")
+  preview     String?
+  createdAt   DateTime     @default(now())
+
+  purchases UserPurchase[]
+
+  @@map("shop_items")
+}
+
+model UserPurchase {
+  id          String   @id @default(cuid())
+  purchasedAt DateTime @default(now())
+
+  userId     String
+  shopItemId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopItem   ShopItem @relation(fields: [shopItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, shopItemId])
+  @@map("user_purchases")
+}
+
+model CoinTransaction {
+  id        String   @id @default(cuid())
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("coin_transactions")
+}
