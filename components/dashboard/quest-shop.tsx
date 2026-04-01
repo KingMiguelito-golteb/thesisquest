@@ -307,18 +307,15 @@ export function QuestShopClient({
               return (
                 <div
                   key={item.id}
-                  className={cn(
-                    "p-5 border transition-all duration-200 group relative overflow-hidden",
-                    item.owned
-                      ? "bg-[var(--bg-elevated)]"
-                      : "bg-[var(--bg-card)]",
-                    equipped && "ring-1"
-                  )}
+                className={cn(
+                "p-5 border transition-all duration-200 group relative overflow-hidden",
+                item.owned ? "bg-[var(--bg-elevated)]" : "bg-[var(--bg-card)]",
+                equipped && "ring-1 ring-[var(--cyan)]"  // <-- ADD THIS
+              )}
                   style={{
                     borderRadius: "4px",
                     borderColor: equipped ? rarity.color : item.owned ? rarity.border : "var(--border-subtle)",
                     boxShadow: equipped ? `0 0 15px ${rarity.bg}` : "none",
-                    ringColor: equipped ? rarity.color : "transparent",
                   }}
                 >
                   {/* Corner accents */}
