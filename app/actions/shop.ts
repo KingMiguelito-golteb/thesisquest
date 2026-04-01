@@ -30,17 +30,17 @@ export async function getShopData() {
 
   const purchasedIds = new Set(user?.purchases.map((p) => p.shopItemId) || []);
 
-  return {
-    coins: user?.coins || 0,
-    activeTitle: user?.activeTitle,
-    activeFrame: user?.activeFrame,
-    activeIcon: user?.activeIcon,
-    activeFlair: user?.activeFlair,
-    items: shopItems.map((item) => ({
-      ...item,
-      owned: purchasedIds.has(item.id),
-    })),
-  };
+return {
+  coins: user?.coins || 0,
+  activeTitle: user?.activeTitle ?? null,
+  activeFrame: user?.activeFrame ?? null,
+  activeIcon: user?.activeIcon ?? null,
+  activeFlair: user?.activeFlair ?? null,
+  items: shopItems.map((item) => ({
+    ...item,
+    owned: purchasedIds.has(item.id),
+  })),
+};
 }
 
 export async function purchaseItem(itemId: string) {
