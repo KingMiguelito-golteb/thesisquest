@@ -178,15 +178,14 @@ export function LeaderboardClient({
 
           return (
             <div
-              key={entry.id}
-              className={cn("card-cyber p-4 flex items-center gap-4", isCurrentUser && "ring-1")}
-              style={{
-                borderRadius: "4px",
-                borderColor: isCurrentUser ? "var(--cyan)" : undefined,
-                boxShadow: isCurrentUser ? "0 0 15px var(--cyan-glow)" : undefined,
-                ringColor: isCurrentUser ? "var(--cyan)" : undefined,
-              }}
-            >
+          key={entry.id}
+          className={cn("card-cyber p-4 flex items-center gap-4", isCurrentUser && "ring-1 ring-[var(--cyan)]")}
+          style={{
+            borderRadius: "4px",
+            borderColor: isCurrentUser ? "var(--cyan)" : undefined,
+            boxShadow: isCurrentUser ? "0 0 15px var(--cyan-glow)" : undefined,
+          }}
+        >
               {/* Rank */}
               <div
                 className="w-10 h-10 flex items-center justify-center border flex-shrink-0"
